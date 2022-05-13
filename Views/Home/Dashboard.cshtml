@@ -1,0 +1,98 @@
+﻿@model IEnumerable<AlphaService.Models.Order>
+@using Microsoft.AspNetCore.Http;
+<div class="container-fluid dashboard-container">
+    <div class="container order-container">
+        <div class="row">
+            <div class="col-md-12">
+                <h4>Welcome @Context.Session.GetString("_User")</h4>
+            </div>
+            @if (@Context.Session.GetString("_User") != null)
+            {
+                <div class="col-md-12">
+                    <h5><a href="/">Logout</a></h5>
+                </div>
+            }
+            <div class="col-md-8">
+                <img src="/alpha.png" />
+            </div>
+            <div class="col-md-4" style="text-align:end">
+                <a href="/Orders/Add" class="btn btn-primary" style="background-color: #836953; border-color: #836953; border-radius: 10px;">Create new order</a>
+            </div>
+            <div class="col-md-12">
+                <h4><strong>My Orders</strong></h4>
+                @if (Model.Any())
+                {
+
+
+                    <table class="table">
+                        <thead>
+                            <tr>
+                                <th>@Html.DisplayNameFor(model => model.OrderId)</th>
+                                <th>@Html.DisplayNameFor(model => model.ServiceDate)</th>
+                                <th>@Html.DisplayNameFor(model => model.Model)</th>
+                                <th>@Html.DisplayNameFor(model => model.Mileage)</th>
+                                <th>@Html.DisplayNameFor(model => model.Progress)</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var item in Model)
+                            {
+                                <tr>
+                                    <td>@item.OrderId</td>
+                                    <td>@item.ServiceDate</td>
+                                    <td>@item.Model</td>
+                                    <td>@item.Mileage</td>
+                                    <td>@item.Progress</td>
+                                    <td><a href="/Orders/Edit?id=@item.OrderId">Edit order</a></td>
+                                </tr>
+
+                            }
+
+
+
+
+                        </tbody>
+                    </table>
+                }
+                else
+                {
+                    <div style="text-align:center; font-size:12px; margin-top:50px;">
+                        <h4>You have no orders..</h4>
+                        <h4><a href="/Orders/Add" style="color: #836953">Create new order</a></h4>
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+    <div class="container img-container">
+        <div class="row">
+
+            @if (TempData["OrderMessage"] != null)
+            {
+                <div style="border: 1px solid #e5e4e2; border-radius: 10px; ">
+                    <h4 style="padding: 30px 0px 50px 20px"><strong>@Html.ValidationMessage("OrderKey")</strong></h4>
+                    @{Html.BeginForm("CreateDocument", "Home", FormMethod.Get);
+                        {
+                            <div>
+                                <input type="submit" value="Download PDF" style="width:150px;height:27px" />
+                            </div>
+                        }
+                        Html.EndForm();
+                    }
+                    <img style="width: 100%; height: 350px; object-fit: contain;" src="/ordersuccess.png" />
+                </div>
+
+            }
+            else
+            {
+
+                <div>
+                    <img style="width: 100%; height: 550px; object-fit: contain;" src="/dashboard.png" />
+                </div>
+
+            }
+        </div>
+    </div>
+    
+</div>
+

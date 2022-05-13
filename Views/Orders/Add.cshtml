@@ -1,0 +1,360 @@
+﻿@model AlphaService.Models.ViewModels.AddOrderViewModel
+@{
+    var bookedDates = ViewData["BookedDates"] as IEnumerable<DateTime>;
+}
+<div class="container-fluid add-order-container" style="margin-top:200px; width:70%">
+    <div class="container">
+        <div class="row" style="flex-direction:column">
+            <div class="col-md-12">
+                <img src="/alpha.png" />
+                <h4>New order</h4>
+            </div>
+            <form id="orderForm" method="post">
+                <div class="column">
+                    <div class="form-group">
+                        <label>Select brand</label>
+                        <select class="form-control" name="brand" id="brand" required>
+                            <option selected disabled value="">Select brand</option>
+                            @foreach (var b in Model.BikeBrands)
+                            {
+                                <option value="@b.BikeBrandId">@b.Name</option>
+
+                            }
+
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Select model</label>
+                        <select class="form-control" name="model" id="model" disabled required>
+                            <option selected disabled value="">Select model</option>
+                            @foreach (var m in Model.BikeModels)
+                            {
+                                <option value="@m.BikeModelId" data-brand="@m.BikeBrandId" data-year="@m.LastSupportedYear">@m.Name</option>
+                            }
+                        </select>
+                        <div id="modelErrorMessage"></div>
+                    </div>
+                    <div class="form-group">
+                        <label>Mileage</label>
+                        <input type="text" class="form-control" name="mileage" id="mileage" required />
+                    </div>
+                    <div class="form-group">
+                        <label>Model year</label>
+                        <input type="text" class="form-control" name="modelYear" id="modelYear" required />
+                        <div id="errorMessage"></div>
+                    </div>
+                </div>
+                <div class="column">
+
+                    <div class="form-group">
+                        <label asp-for="ServiceDate" class="control-label">Choose a date:</label>
+                        <div class='input-group date' id='datepicker'>
+                            <input asp-for="ServiceDate" type="text" class="form-control" value="" required />
+                            <span class="input-group-addon">
+                                <span class="glyphicon glyphicon-calendar"></span>
+                            </span>
+                        </div>
+
+                    </div>
+                    <div class="form-group">
+
+                        <label style="font-size:10px;">Type of service</label>
+
+                        <div class="form-check">
+                            <!--<input class="checkbox-class" type="checkbox" value="" name="chainChange"  id="ChainChange" />-->
+                            @Html.CheckBoxFor(m => m.ChainChange, new { @data_price = "" })
+                            <label class="checkbox-label">Chain change</label>
+                            <div class="price" id="chain-price"></div>
+                        </div>
+
+
+
+                        <div class="form-check">
+                            <!--<input class="checkbox-class" type="checkbox" value="true" data-price="" name="oilChange" id="OilChange" />-->
+                            @Html.CheckBoxFor(m => m.OilChange, new { @data_price = "" })
+                            <label class="checkbox-label">Oil and filter change</label>
+                            <div class="price" id="oil-price"></div>
+                        </div>
+
+
+
+                        <div class="form-check">
+                            <!--<input class="checkbox-class" type="checkbox" value="" name="airFilterChange"  id="AirFilterChange" />-->
+                            @Html.CheckBoxFor(m => m.AirFilterChange, new { @data_price = "" })
+                            <label class="checkbox-label">Air filter change</label>
+                            <div class="price" id="air-filter-price"></div>
+                        </div>
+
+
+
+                        <div class="form-check">
+                            <!--<input class="checkbox-class" type="checkbox" value="" name="brakeFluidChange"  id="BrakeFluidChange" />-->
+                            @Html.CheckBoxFor(m => m.BrakeFluidChange, new { @data_price = "" })
+                            <label class="checkbox-label">Brake fluid change</label>
+                            <div class="price" id="brake-price"></div>
+
+                        </div>
+
+                    </div>
+                    <div class="discount-options">
+                        <h6><strong>Note: Consider discount options</strong></h6>
+                        <p><strong>40 EUR OFF</strong> for full service</p>
+                        <p><strong>20% OFF</strong> - Chain change + Oil an filter change + Air filter change</p>
+                        <p><strong>20 EUR OFF</strong> - Oil and air filter change + Air filter change</p>
+                        <p><strong>15% OFF</strong> - Chain change + brake fluid change</p>
+                    </div>
+                </div>
+                <div class="column" style="border:1px solid lightgray; border-radius:10px; padding:10px 15px 10px 15px;">
+                    <h4><strong>Order summary</strong></h4>
+                    <p id="orderDate"></p>
+                    <div>
+                        <label class="price-label">Chain change</label>
+                        <div class="price" id="chain-change-price"></div>
+                    </div>
+                    <div>
+                        <label class="price-label">Oil and oil filter change</label>
+                        <div class="price" id="oil-filter-change-price"></div>
+                    </div>
+                    <div>
+                        <label class="price-label">Air filter change</label>
+                        <div class="price" id="air-filter-change-price"></div>
+                    </div>
+                    <div>
+                        <label class="price-label">Brake fluid change</label>
+                        <div class="price" id="brake-fluid-change-price"></div>
+                    </div>
+
+                    <hr />
+                    <div>
+                        <label class="price-label">Full price:</label>
+                        <div class="price" id="fullPrice"></div>
+                    </div>
+                    <div>
+                        <label class="price-label">Discount:</label>
+                        <div class="price" id="discount"></div>
+                    </div>
+                    <div>
+                        <label class="price-label"><strong>Price:</strong></label>
+                        <div class="price" id="totalPrice"></div>
+                    </div>
+
+                    <button class="btn btn-primary create-order" type="submit" id="submitButton">Create order</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+</div>
+@section Scripts{
+    <script src="~/js/priceCalculator.js"></script>
+    <script src="~/js/compareBrandIds.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/1.12.4/jquery.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.15.1/moment.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.14.30/js/bootstrap-datetimepicker.min.js"></script>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.3.7/css/bootstrap.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.14.30/css/bootstrap-datetimepicker.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-datetimepicker/4.14.30/css/bootstrap-datetimepicker.min.css
+">
+    <script>
+        $(function () {
+            var bookedDates = @Html.Raw(Json.Serialize(bookedDates));
+            var formate = bookedDates.map((date) => {
+                return moment(moment(date)).format('MM/DD/YYYY HH:mm');
+            });
+            $('#datepicker').datetimepicker({
+                format: 'MM/DD/YYYY HH:mm',
+                disabledDates:true,
+                disabledDates: formate,
+                disabledHours: true,
+                disabledHours: [0, 1, 2, 3, 4, 5, 6, 7, 17, 18, 19, 20, 21, 22, 23, 24],
+                daysOfWeekDisabled: [0, 6]
+            }).on('dp.hide', function (event) {
+                var serviceDate = $('#ServiceDate').val();
+                $('#orderDate').empty().append(serviceDate);
+                console.log(formate);
+            });
+        });
+    </script>
+
+    <script type="text/javascript">
+        function append(fullPrice, totalPrice, discount) {
+            $('#fullPrice').empty().append(fullPrice + "$");
+            $('#discount').empty().append(discount);
+            $('#totalPrice').empty().append(totalPrice + "$");
+        }
+
+        $('#brand').change(function () {
+            if (this.value === '') {
+                model.disabled = true;
+                model.selectedIndex = 0;
+
+            } else {
+                model.disabled = false;
+                model.selectedIndex = 0;
+            }
+            $('.price').empty();
+            $('.checkbox-class').prop('checked', false);
+        });
+
+        $('#model').change(function () {
+            var brands = $('#brand').find(':selected').text();
+            var models = $('#model').find(':selected').text();
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("Prices")",
+                data: { brand: brands, model: models },
+                success: function (data) {
+                    $('#oil-price').empty().append(data.oilprice + '$');
+                    if ($("#OilChange").prop('checked')) {
+                        $('#oil-filter-change-price').empty().append(data.oilprice + '$');
+                        $('#OilChange').data("price", data.oilprice);
+
+                    } else {
+                        $('#oil-filter-change-price').empty();
+                    }
+
+                    $('#chain-price').empty().append(data.chainprice + '$');
+                    if ($("#ChainChange").prop('checked')) {
+                        $('#chain-change-price').empty().append(data.chainprice + '$');
+                        $('#ChainChange').data("price", data.chainprice);
+                    } else {
+                        $('#chain-change-price').empty();
+                    }
+
+                    $('#air-filter-price').empty().append(data.airprice + '$');
+                    if ($("#AirFilterChange").prop('checked')) {
+                        $('#air-filter-change-price').empty().append(data.airprice + '$');
+                        $('#AirFilterChange').data("price", data.airprice);
+                    } else {
+                        $('#air-filter-change-price').empty();
+                    }
+
+                    $('#brake-price').empty().append(data.brakeprice + '$');
+                    if ($("#BrakeFluidChange").prop('checked')) {
+                        $('#brake-fluid-change-price').empty().append(data.brakeprice + '$');
+                        $('#BrakeFluidChange').data("price", data.brakeprice);
+                    } else {
+                        $('#brake-fluid-change-price').empty();
+                    }
+
+                    compareBrandIds();
+                    priceCalculator();
+                },
+                error: function (req, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+
+
+        $('#OilChange').on('click', function () {
+            var brands = $('#brand').find(':selected').text();
+            var models = $('#model').find(':selected').text();
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("OilPrice")",
+                data: { brand: brands, model: models },
+                success: function (data) {
+                    if ($("#OilChange").prop('checked')) {
+                        $('#oil-filter-change-price').append(data.price + '$');
+                        $('#OilChange').data("price", data.price);
+                    } else {
+                        $('#oil-filter-change-price').empty();
+                    }
+                    priceCalculator();
+
+                },
+                error: function (req, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+
+
+        $('#ChainChange').on('click', function () {
+            var brands = $('#brand').find(':selected').text();
+            var models = $('#model').find(':selected').text();
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("ChainPrice")",
+                data: { brand: brands, model: models },
+                success: function (data) {
+
+                    if ($("#ChainChange").prop('checked')) {
+                        $('#chain-change-price').append(data.price + '$');
+                        $('#ChainChange').data("price", data.price);
+                    } else {
+                        $('#chain-change-price').empty();
+                    }
+                    priceCalculator();
+                },
+                error: function (req, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+
+        $('#AirFilterChange').on('click', function () {
+            var brands = $('#brand').find(':selected').text();
+            var models = $('#model').find(':selected').text();
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("AirFilterPrice")",
+                data: { brand: brands, model: models },
+                success: function (data) {
+                    if ($("#AirFilterChange").prop('checked')) {
+                        $('#air-filter-change-price').append(data.price + '$');
+                        $('#AirFilterChange').data("price", data.price);
+                    } else {
+                        $('#air-filter-change-price').empty();
+                    }
+                    priceCalculator();
+                },
+                error: function (req, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+
+        $('#BrakeFluidChange').on('click', function () {
+            var brands = $('#brand').find(':selected').text();
+            var models = $('#model').find(':selected').text();
+            $.ajax({
+                type: "POST",
+                url: "@Url.Action("BrakeFluidPrice")",
+                data: { brand: brands, model: models },
+                success: function (data) {
+                    if ($("#BrakeFluidChange").prop('checked')) {
+                        $('#brake-fluid-change-price').append(data.price + '$');
+                        $('#BrakeFluidChange').data("price", data.price);
+                    } else {
+                        $('#brake-fluid-change-price').empty();
+                    }
+                    priceCalculator();
+                },
+                error: function (req, status, error) {
+                    console.log(error);
+                }
+            });
+        });
+
+        $("#modelYear").change(function () {
+            var modelYear = $('#model').find(':selected').data('year');
+            if (parseInt(this.value) < modelYear) {
+
+                $('#submitButton').prop('disabled', true);
+                $('#errorMessage').empty().append("This model year is not supported");
+                $('#modelYear').addClass("alert alert-danger");
+                $('#errorMessage').addClass("alert alert-danger");
+            } else {
+                $('#submitButton').prop('disabled', false);
+                $('#modelYear').removeClass("alert alert-danger");
+                $('#errorMessage').removeClass("alert alert-danger");
+                $('#errorMessage').empty();
+            }
+        });
+
+    </script>
+}
